@@ -52,7 +52,10 @@ int pidFilehandle, minterval, vzport, i, count;
 
 const char *vzserver, *vzpath, *uuid;
 
-char sensorid[13][32][17], vzuuid[13][32][64], crc_buffer[64], temp_buffer[64], fn[128], url[128];
+#define MAX_BUS 12
+#define MAX_DEV 31
+
+char sensorid[MAX_BUS+1][MAX_DEV+1][17], vzuuid[MAX_BUS+1][MAX_DEV+1][64], crc_buffer[64], temp_buffer[64], fn[128], url[128];
 
 char crc_ok[] = "YES";
 char not_found[] = "not found.";
@@ -248,6 +251,7 @@ return i2cdevices-2;
 void ds1820init(int nr_devices) {
 
 	int i = 0;
+	if (nr_devices>MAX_DEV) nr_devices=MAX_DEV;
 	//int nr_devices = count_i2cdevices();
 	for (i=1; i<=nr_devices; i++) {
 
@@ -262,7 +266,7 @@ void ds1820init(int nr_devices) {
 		{
 			count = 1;
 			
-			while ( fgets ( sensorid[i][count], sizeof(sensorid[i][count]), fp ) != NULL ) {
+			while ( (count < MAX_DEV) && (fgets ( sensorid[i][count], sizeof(sensorid[i][count]), fp ) != NULL) ) {
 				sensorid[i][count][strlen(sensorid[i][count])-1] = '\0';
 
 				if ( ! ( strstr ( sensorid[i][count], not_found ) )) {
@@ -391,6 +395,7 @@ int main() {
 	setlogmask(LOG_UPTO(LOG_INFO));
 	openlog(DAEMON_NAME, LOG_CONS | LOG_PERROR, LOG_USER);
 	int nr_devices = count_i2cdevices(); // TODO reset/rescan e.g. on SIGHUP
+	if (nr_devices > MAX_DEV) nr_devices = MAX_DEV;
 
 	syslog(LOG_INFO, "DS2482 I²C 1-Wire® Master to Volkszaehler deamon %s (%s) %d", DAEMON_VERSION, DAEMON_BUILD, nr_devices);
 
@@ -418,7 +423,7 @@ int main() {
 				{
 
 					count = 1;
-					while ( count<32 && (fgets ( sensorid[i][count], sizeof(sensorid[i][count]), fp ) != NULL) ) {
+					while ( (count<MAX_DEV) && (fgets ( sensorid[i][count], sizeof(sensorid[i][count]), fp ) != NULL) ) {
 						sensorid[i][count][strlen(sensorid[i][count])-1] = '\0';
 
 						if ( !( strstr ( sensorid[i][count], not_found ) )) {
