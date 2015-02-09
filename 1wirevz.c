@@ -52,7 +52,7 @@ int pidFilehandle, minterval, vzport, i, count;
 
 const char *vzserver, *vzpath, *uuid;
 
-char sensorid[3][32][17], vzuuid[3][32][64], crc_buffer[64], temp_buffer[64], fn[128], url[128];
+char sensorid[13][32][17], vzuuid[13][32][64], crc_buffer[64], temp_buffer[64], fn[128], url[128];
 
 char crc_ok[] = "YES";
 char not_found[] = "not found.";
@@ -271,7 +271,7 @@ void ds1820init(int nr_devices) {
 					sprintf ( buffer, "*%s", sensorid[i][count] );
 					if ( config_lookup_string( &cfg, buffer, &uuid ) == CONFIG_TRUE ) {
 						strcpy(vzuuid[i][count], uuid);
-						++vzuuid[i][0][0]; // store number of devices on that bus here
+						++(vzuuid[i][0][0]); // store number of devices on that bus here
 					}
 
 				}
@@ -418,7 +418,7 @@ int main() {
 				{
 
 					count = 1;
-					while ( fgets ( sensorid[i][count], sizeof(sensorid[i][count]), fp ) != NULL ) {
+					while ( count<32 && (fgets ( sensorid[i][count], sizeof(sensorid[i][count]), fp ) != NULL) ) {
 						sensorid[i][count][strlen(sensorid[i][count])-1] = '\0';
 
 						if ( !( strstr ( sensorid[i][count], not_found ) )) {
